@@ -134,13 +134,77 @@ const chatWidget = `
   }, null, 2)})
 </script>`
 
+// ---------- tema claro/escuro ----------
+// Aplicado antes da primeira pintura para não piscar: preferência salva > tema do sistema.
+const themeInit = `<script>
+  (function () {
+    var t
+    try { t = localStorage.getItem('theme') } catch (e) {}
+    if (t !== 'light' && t !== 'dark') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    document.documentElement.dataset.theme = t
+  })()
+</script>`
+
+const sunIcon = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>'
+const moonIcon = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
+
+const themeToggle = `
+<button type="button" class="theme-toggle" aria-label="Alternar tema claro/escuro">
+  <span class="theme-toggle-dark">${moonIcon}</span><span class="theme-toggle-light">${sunIcon}</span>
+</button>
+<script>
+  (function () {
+    var root = document.documentElement
+    var btn = document.querySelector('.theme-toggle')
+    function apply(t) {
+      root.dataset.theme = t
+      btn.title = t === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'
+      // Ícones nativos do Notion têm versões por tema
+      document.querySelectorAll('img[src*="/icons/"][src*="mode="]').forEach(function (img) {
+        img.src = img.src.replace(/mode=(light|dark)/, 'mode=' + t)
+      })
+    }
+    apply(root.dataset.theme)
+    btn.addEventListener('click', function () {
+      var t = root.dataset.theme === 'dark' ? 'light' : 'dark'
+      try { localStorage.setItem('theme', t) } catch (e) {}
+      apply(t)
+    })
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
+      var saved
+      try { saved = localStorage.getItem('theme') } catch (err) {}
+      if (!saved) apply(e.matches ? 'dark' : 'light')
+    })
+  })()
+</script>`
+
+// Prefixa cada seletor de um CSS simples (sem aninhamento além de @media) com um escopo.
+const scopeCss = (css, scope) =>
+  css.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[{}])(\s*)([^{}@]+?)\s*\{/g, (_, brace, ws, selectors) =>
+    `${brace}${ws}${selectors.split(',').map((s) => `${scope} ${s.trim()}`).join(', ')} {`)
+
+async function writeStyles() {
+  // O CSS do react-notion-x usa a classe .dark-mode; trocamos pelo atributo no <html> para alternar sem re-render.
+  const notionCss = await fs.readFile(require.resolve('react-notion-x/styles.css'), 'utf8')
+  await fs.writeFile(path.join(ASSETS, 'notion.css'), notionCss.replaceAll('.dark-mode', 'html[data-theme="dark"]'))
+
+  const prismLight = await fs.readFile(require.resolve('prismjs/themes/prism-coy.css'), 'utf8')
+  const prismDark = await fs.readFile(require.resolve('prismjs/themes/prism-tomorrow.css'), 'utf8')
+  await fs.writeFile(path.join(ASSETS, 'prism.css'),
+    scopeCss(prismLight, 'html:not([data-theme="dark"])') + '\n' + scopeCss(prismDark, 'html[data-theme="dark"]'))
+
+  await fs.copyFile(path.join(ROOT, 'static', 'site.css'), path.join(ASSETS, 'site.css'))
+}
+
 function htmlDocument({ title, body, description, favicon }) {
   return `<!doctype html>
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
 <title>${escapeHtml(title)}</title>
+${themeInit}
 ${description ? `<meta name="description" content="${escapeHtml(description)}" />` : ''}
 ${favicon ? `<link rel="icon" href="${escapeHtml(favicon)}" />` : ''}
 <link rel="stylesheet" href="./assets/notion.css" />
@@ -149,6 +213,7 @@ ${favicon ? `<link rel="icon" href="${escapeHtml(favicon)}" />` : ''}
 </head>
 <body>
 ${body}
+${themeToggle}
 ${chatWidget}
 </body>
 </html>
@@ -181,9 +246,7 @@ async function build() {
     console.log(`  ✓ ${fileFor.get(pid)}`)
   }
 
-  await fs.copyFile(require.resolve('react-notion-x/styles.css'), path.join(ASSETS, 'notion.css'))
-  await fs.copyFile(require.resolve('prismjs/themes/prism-coy.css'), path.join(ASSETS, 'prism.css'))
-  await fs.copyFile(path.join(ROOT, 'static', 'site.css'), path.join(ASSETS, 'site.css'))
+  await writeStyles()
   await fs.writeFile(path.join(OUT, '.nojekyll'), '')
   console.log(`Pronto: ${fileFor.size} páginas em dist/`)
 }
