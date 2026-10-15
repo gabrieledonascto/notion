@@ -58,31 +58,3 @@ html[data-theme="dark"] .theme-toggle-dark { display: none; }
 
 /* ---------- Código no tema escuro ---------- */
 html[data-theme="dark"] .notion-code { background: rgb(37, 37, 37); color: rgba(255, 255, 255, 0.85); }
-
-/* ---------- Widget de chat do n8n ---------- */
-#n8n-chat { position: relative; z-index: 9999; }
-.chat-window-wrapper { z-index: 9999; }
-
-html[data-theme="dark"] {
-  --chat--color-light: #2f3437;
-  --chat--color-light-shade-50: #3f4447;
-  --chat--color-light-shade-100: #474c50;
-  --chat--color-medium: #5a5f63;
-  --chat--color-dark: rgba(255, 255, 255, 0.9);
-  --chat--color-white: #252525;
-  --chat--color-typing: rgba(255, 255, 255, 0.7);
-  --chat--body--background: #2f3437;
-  --chat--footer--background: #2f3437;
-  --chat--footer--color: rgba(255, 255, 255, 0.9);
-  --chat--message--bot--background: #3f4447;
-  --chat--message--bot--color: rgba(255, 255, 255, 0.9);
-  --chat--message--bot--border: none;
-  --chat--input--background: #252525;
-  --chat--input--text-color: rgba(255, 255, 255, 0.9);
-  --chat--input--border: 1px solid #474c50;
-  --chat--message--pre--background: rgba(0, 0, 0, 0.3);
-}
-
-@media (max-width: 480px) {
-  :root { --chat--window--width: calc(100vw - 32px); --chat--window--height: calc(100vh - 120px); }
-}

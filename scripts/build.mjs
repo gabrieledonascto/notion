@@ -1,4 +1,4 @@
-// Gera um site estático a partir da página pública do Notion e injeta o widget de chat do n8n.
+// Gera um site estático a partir da página pública do Notion e injeta o widget de chat (n8n).
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import crypto from 'node:crypto'
@@ -111,32 +111,10 @@ function renderPage(recordMap) {
   )
 }
 
+// Widget próprio (static/chat.js) que fala com o Chat Trigger do n8n; textos em site.config.mjs.
 const chatWidget = `
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@n8n/chat@${config.chat.version}/dist/style.css" />
-<style>
-  :root {
-    --chat--color-primary: ${config.chat.primaryColor};
-    --chat--color-primary-shade-50: ${config.chat.primaryColor};
-    --chat--color-primary-shade-100: ${config.chat.primaryColor};
-    --chat--toggle--background: ${config.chat.primaryColor};
-    --chat--toggle--hover--background: ${config.chat.primaryColor};
-    --chat--toggle--active--background: ${config.chat.primaryColor};
-    --chat--window--width: 400px;
-    --chat--window--height: 600px;
-  }
-</style>
-<script type="module">
-  import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat@${config.chat.version}/dist/chat.bundle.es.js'
-  createChat(${JSON.stringify({
-    webhookUrl: config.chat.webhookUrl,
-    mode: 'window',
-    showWelcomeScreen: false,
-    defaultLanguage: 'en',
-    loadPreviousSession: true,
-    initialMessages: config.chat.initialMessages,
-    i18n: { en: config.chat.i18n },
-  }, null, 2)})
-</script>`
+<script>window.CHAT_CONFIG = ${JSON.stringify(config.chat).replace(/</g, '\\u003c')}</script>
+<script src="./assets/chat.js" defer></script>`
 
 // ---------- tema claro/escuro ----------
 // Aplicado antes da primeira pintura para não piscar: preferência salva > tema do sistema.
@@ -197,7 +175,7 @@ async function writeStyles() {
   await fs.writeFile(path.join(ASSETS, 'prism.css'),
     scopeCss(prismLight, 'html:not([data-theme="dark"])') + '\n' + scopeCss(prismDark, 'html[data-theme="dark"]'))
 
-  await fs.copyFile(path.join(ROOT, 'static', 'site.css'), path.join(ASSETS, 'site.css'))
+  for (const f of ['site.css', 'chat.css', 'chat.js']) await fs.copyFile(path.join(ROOT, 'static', f), path.join(ASSETS, f))
 }
 
 function htmlDocument({ title, body, description, favicon }) {
@@ -214,6 +192,10 @@ ${favicon ? `<link rel="icon" href="${escapeHtml(favicon)}" />` : ''}
 <link rel="stylesheet" href="./assets/notion.css" />
 <link rel="stylesheet" href="./assets/prism.css" />
 <link rel="stylesheet" href="./assets/site.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" />
+<link rel="stylesheet" href="./assets/chat.css" />
 </head>
 <body>
 ${body}
