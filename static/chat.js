@@ -69,7 +69,7 @@
   var isImg = /^(\.|\/|https?:)/.test(cfg.avatar || '')
   var avatarHtml = isImg ? '<img src="' + esc(cfg.avatar) + '" alt="" />' : esc(cfg.avatar || '🤖')
 
-  var root = el('div', 'tc')
+  var root = el('div', isImg ? 'tc tc-has-avatar' : 'tc')
   root.innerHTML =
     '<section class="tc-window" role="dialog" aria-label="' + esc(cfg.title) + '" hidden>' +
       '<header class="tc-header">' +
@@ -92,7 +92,7 @@
       '</footer>' +
     '</section>' +
     '<button type="button" class="tc-launcher" aria-label="Abrir ' + esc(cfg.title) + '" aria-expanded="false">' +
-      '<span class="tc-launcher-open">' + icons.chat + '</span><span class="tc-launcher-close">' + icons.down + '</span>' +
+      '<span class="tc-launcher-open">' + (isImg ? '<img src="' + esc(cfg.avatar) + '" alt="" />' : icons.chat) + '</span><span class="tc-launcher-close">' + icons.down + '</span>' +
     '</button>'
   document.body.appendChild(root)
 

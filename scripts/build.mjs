@@ -175,7 +175,7 @@ async function writeStyles() {
   await fs.writeFile(path.join(ASSETS, 'prism.css'),
     scopeCss(prismLight, 'html:not([data-theme="dark"])') + '\n' + scopeCss(prismDark, 'html[data-theme="dark"]'))
 
-  for (const f of ['site.css', 'chat.css', 'chat.js']) await fs.copyFile(path.join(ROOT, 'static', f), path.join(ASSETS, f))
+  for (const f of await fs.readdir(path.join(ROOT, 'static'))) await fs.copyFile(path.join(ROOT, 'static', f), path.join(ASSETS, f))
 }
 
 function htmlDocument({ title, body, description, favicon }) {

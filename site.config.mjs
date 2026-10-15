@@ -14,8 +14,8 @@ export default {
 
     title: 'Tiger IA',
     subtitle: 'Assistente da Central Tigers',
-    // Emoji ou caminho de imagem (ex.: './assets/tiger.png' — coloque o arquivo em static/)
-    avatar: '🐯',
+    // Imagem em static/ (servida em ./assets/) ou um emoji
+    avatar: './assets/tiger-avatar.svg',
     welcome: 'Olá! 👋 Sou o Tiger IA, seu assistente da Central de Conhecimento. Como posso ajudar?',
 
     suggestionsTitle: 'Explore com o Tiger',

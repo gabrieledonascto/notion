@@ -57,6 +57,16 @@ html[data-theme="dark"] .tc {
 .tc-launcher:hover { background: var(--tc-accent-hover); transform: scale(1.05); }
 .tc-launcher:focus-visible { outline: 3px solid color-mix(in srgb, var(--tc-accent) 40%, transparent); outline-offset: 3px; }
 .tc-launcher span { display: inline-flex; }
+
+/* Com imagem de avatar, o botão fechado é a própria foto do assistente */
+.tc-has-avatar:not(.tc-open) .tc-launcher {
+  overflow: hidden;
+  padding: 0;
+  background: #fff0d9;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18), 0 0 0 3px rgba(255, 255, 255, 0.9);
+}
+html[data-theme="dark"] .tc-has-avatar:not(.tc-open) .tc-launcher { box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 0 0 3px rgba(255, 255, 255, 0.12); }
+.tc-launcher-open img { display: block; width: 60px; height: 60px; }
 .tc-launcher-close, .tc-open .tc-launcher-open { display: none !important; }
 .tc-open .tc-launcher-close { display: inline-flex !important; }
 
