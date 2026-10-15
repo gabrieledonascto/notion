@@ -5,6 +5,25 @@ html, body { margin: 0; background: var(--bg-color); color: var(--fg-color); }
 /* Barra superior: só o breadcrumb, sem busca/ações do Notion */
 .notion-header .notion-nav-header-rhs { display: none; }
 
+/* Tabelas de bases de dados: o react-notion-x as renderiza com visibility:hidden e só mostra
+   depois de medir a janela via JS no navegador, que não roda neste site estático. */
+/* Sem esse JS, a base fica na coluna do texto e a tabela rola na horizontal dentro dela. */
+.notion-collection {
+  align-self: stretch;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+.notion-collection .notion-table {
+  visibility: visible !important;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+}
+.notion-collection .notion-table-view { float: none; width: max-content; min-width: 100%; padding: 0; }
+.notion-collection .notion-table-header,
+.notion-collection .notion-table-body { min-width: 100%; }
+
 /* Links de páginas/bases não abrem modais aqui */
 .notion-collection-card, .notion-page-link { cursor: pointer; }
 
