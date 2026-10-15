@@ -33,8 +33,8 @@ function normalize(recordMap) {
 }
 
 const slugify = (s) =>
-  s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'pagina'
+  s.normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80) || 'Pagina'
 
 const escapeHtml = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c])
 
@@ -42,17 +42,21 @@ const escapeHtml = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt
 console.log('Buscando páginas no Notion...')
 const pages = await getAllPagesInSpace(rootId, undefined, (id) => api.getPage(id).then(normalize), { concurrency: 3 })
 
-const fileFor = new Map() // pageId (sem hífens) -> nome do arquivo
+// Mesmo formato de URL do notion.site ("Titulo-<id>"), então dá para trocar só o domínio.
+const slugFor = new Map() // pageId (sem hífens) -> caminho sem extensão
 for (const [id, recordMap] of Object.entries(pages)) {
   if (!recordMap) continue
   const pid = uuidToId(id)
   const block = recordMap.block[id]?.value
-  fileFor.set(pid, pid === rootId ? 'index.html' : `${slugify(getBlockTitle(block, recordMap) || '')}-${pid.slice(0, 8)}.html`)
+  slugFor.set(pid, pid === rootId ? 'index' : `${slugify(getBlockTitle(block, recordMap) || '')}-${pid}`)
 }
+const fileFor = (pid) => `${slugFor.get(pid)}.html`
 
+// O GitHub Pages serve "Pagina.html" em "/Pagina", então os links ficam sem extensão.
 const mapPageUrl = (id) => {
   const pid = uuidToId(id)
-  return fileFor.has(pid) ? `./${fileFor.get(pid)}` : `https://www.notion.so/${pid}`
+  if (pid === rootId) return './'
+  return slugFor.has(pid) ? `./${slugFor.get(pid)}` : `https://www.notion.so/${pid}`
 }
 
 // ---------- imagens: baixa tudo para dist/assets para não depender de URLs assinadas que expiram ----------
@@ -242,13 +246,13 @@ async function build() {
       favicon,
       body: renderPage(recordMap),
     })
-    await fs.writeFile(path.join(OUT, fileFor.get(pid)), html)
-    console.log(`  ✓ ${fileFor.get(pid)}`)
+    await fs.writeFile(path.join(OUT, fileFor(pid)), html)
+    console.log(`  ✓ ${fileFor(pid)}`)
   }
 
   await writeStyles()
   await fs.writeFile(path.join(OUT, '.nojekyll'), '')
-  console.log(`Pronto: ${fileFor.size} páginas em dist/`)
+  console.log(`Pronto: ${slugFor.size} páginas em dist/`)
 }
 
 await build()
