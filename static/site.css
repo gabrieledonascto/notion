@@ -1,0 +1,17 @@
+/* Ajustes para a versão estática (sem o app do Notion) */
+html, body { margin: 0; background: #fff; }
+.notion-app { min-height: 100vh; }
+
+/* Barra superior: só o breadcrumb, sem busca/ações do Notion */
+.notion-header .notion-nav-header-rhs { display: none; }
+
+/* Links de páginas/bases não abrem modais aqui */
+.notion-collection-card, .notion-page-link { cursor: pointer; }
+
+/* Mantém o widget acima do conteúdo do Notion */
+#n8n-chat { position: relative; z-index: 9999; }
+.chat-window-wrapper { z-index: 9999; }
+
+@media (max-width: 480px) {
+  :root { --chat--window--width: calc(100vw - 32px); --chat--window--height: calc(100vh - 120px); }
+}
